@@ -1,48 +1,46 @@
-const express = require('express');
-const axios = require('axios');
-const app = express();
-const port = process.env.PORT || 3000;
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("authForm");
+  const username = form.querySelector('input[name="username"]');
+  const password = form.querySelector('input[name="password"]');
+  const messageBox = document.querySelector(".message");
 
-const reactions = [
-    "airkiss", "angrystare", "bite", "bleh", "blush", "brofist", "celebrate",
-    "cheers", "clap", "confused", "cool", "cry", "cuddle", "dance", "drool",
-    "evillaugh", "facepalm", "handhold", "happy", "headbang", "hug", "huh",
-    "kiss", "laugh", "lick", "love", "mad", "nervous", "no", "nom", "nosebleed",
-    "nuzzle", "nyah", "pat", "peek", "pinch", "poke", "pout", "punch", "roll",
-    "run", "sad", "scared", "shout", "shrug", "shy", "sigh", "sip", "slap",
-    "sleep", "slowclap", "smack", "smile", "smug", "sneeze", "sorry", "stare",
-    "stop", "surprised", "sweat", "thumbsup", "tickle", "tired", "wave",
-    "wink", "woah", "yawn", "yay", "yes"
-];
-
-app.get('/', async (req, res) => {
-    try {
-        let reaction = req.query.reaction;
-        
-        if (!reaction) {
-            return res.status(400).json({ error: "put a 'reaction' query." });
-        }
-        
-        if (reaction === "random") {
-            reaction = reactions[Math.floor(Math.random() * reactions.length)];
-        }
-        
-        if (!reactions.includes(reaction)) {
-            return res.status(400).json({ error: "invalid reaction" });
-        }
-        
-        const response = await axios.get(`https://api.otakugifs.xyz/gif?reaction=${reaction}&format=gif`);
-        const gifUrl = response.data.url;
-        
-        const imageResponse = await axios.get(gifUrl, { responseType: 'arraybuffer' });
-        res.set('Content-Type', 'image/png');
-        res.send(imageResponse.data);
-        
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch GIF" });
+  // AI-style dynamic suggestions
+  username.addEventListener("input", () => {
+    if (username.value.length < 3) {
+      showMessage("AI Hint: Your username is too short.");
+    } else {
+      clearMessage();
     }
-});
+  });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  password.addEventListener("input", () => {
+    if (password.value.length < 6) {
+      showMessage("AI Security Tip: Password should be at least 6 characters.");
+    } else if (!/\d/.test(password.value)) {
+      showMessage("AI Alert: Add at least one number.");
+    } else if (!/[A-Z]/.test(password.value)) {
+      showMessage("AI Suggestion: Use uppercase letters for better security.");
+    } else {
+      clearMessage();
+    }
+  });
+
+  // Validate before submit
+  form.addEventListener("submit", (e) => {
+    if (username.value.trim().length < 3 || password.value.length < 6) {
+      e.preventDefault();
+      showMessage("AI Warning: Please check your login credentials.");
+    } else {
+      showMessage("AI: Logging you in...", "green");
+    }
+  });
+
+  function showMessage(text, color = "orange") {
+    messageBox.textContent = text;
+    messageBox.style.color = color;
+  }
+
+  function clearMessage() {
+    messageBox.textContent = "";
+  }
 });
